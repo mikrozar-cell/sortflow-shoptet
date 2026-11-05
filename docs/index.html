@@ -77,11 +77,13 @@
     .badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
+      gap: 5px;
+      padding: 4px 9px;
       border-radius: 999px;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .badge--dark {
@@ -145,7 +147,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 5px;
       padding: 9px 15px;
       border-radius: 8px;
       font-size: 13px;
@@ -155,6 +157,8 @@
       color: var(--s-text);
       cursor: pointer;
       transition: all 0.15s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .btn:hover:not(:disabled) {
@@ -199,8 +203,8 @@
     }
 
     .btn--sm {
-      padding: 5px 10px;
-      font-size: 12px;
+      padding: 4px 8px;
+      font-size: 11.5px;
       border-radius: 6px;
     }
 
@@ -402,22 +406,24 @@
     .product-card__rank-wrap {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
+      flex-shrink: 0;
     }
 
     .rank-pill {
       background: #1e242b;
       color: #fff;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 700;
-      padding: 3px 8px;
+      padding: 3px 7px;
       border-radius: 6px;
+      white-space: nowrap;
     }
 
     .rank-jump-input {
-      width: 46px;
-      padding: 3px 6px;
-      font-size: 12px;
+      width: 38px;
+      padding: 3px 4px;
+      font-size: 11.5px;
       border: 1px solid var(--s-border);
       border-radius: 5px;
       text-align: center;
@@ -450,7 +456,7 @@
     }
 
     .product-meta {
-      font-size: 12px;
+      font-size: 11.5px;
       color: var(--s-text-subdued);
       display: flex;
       gap: 8px;
@@ -469,6 +475,7 @@
       border: 1px solid #f5b9b5;
       padding: 2px 7px;
       border-radius: 6px;
+      white-space: nowrap;
     }
 
     .product-card__footer {
@@ -478,6 +485,7 @@
       padding-top: 10px;
       border-top: 1px solid rgba(0, 0, 0, 0.06);
       gap: 6px;
+      flex-wrap: nowrap;
     }
 
     .api-footer {
@@ -695,7 +703,7 @@
 
         const stockBadge = isInStock
           ? `<span class="badge badge--success">● Skladem (${prod.stock} ks)</span>`
-          : `<span class="badge badge--critical">● Vyprodáno · Odsunuto</span>`;
+          : `<span class="badge badge--critical">● Vyprodáno (0 ks)</span>`;
 
         const pinBtn = prod.is_pinned
           ? `<span class="badge badge--pinned">📌 Připnuto</span>
@@ -703,7 +711,7 @@
           : `<button class="btn btn--sm" onclick="togglePin(${idx})">📌 Připnout</button>`;
 
         const memoryBadge = (!isInStock && prod.saved_rank)
-          ? `<div class="memory-callout">🧠 Paměť naskladnění: Pozice #${prod.saved_rank}</div>`
+          ? `<div class="memory-callout">🧠 Paměť: Pozice #${prod.saved_rank}</div>`
           : "";
 
         card.innerHTML = `
@@ -714,7 +722,7 @@
               <span class="rank-pill">#${idx + 1}</span>
               <input type="number" min="1" max="${products.length}" value="${idx + 1}" class="rank-jump-input" onchange="jumpToRank(${idx}, this.value)" />
             </div>
-            <div style="display:flex;gap:5px;align-items:center;">${pinBtn}</div>
+            <div style="display:flex;gap:4px;align-items:center;flex-shrink:0;">${pinBtn}</div>
           </div>
 
           <div class="product-card__body">
@@ -724,7 +732,9 @@
               <div class="product-meta">
                 <span>Kód: <strong>${prod.code}</strong></span>
                 <span><strong>${prod.price}</strong></span>
-                <span>Priorita: <code>${(idx + 1) * 10}</code></span>
+              </div>
+              <div class="product-meta" style="margin-top:2px;">
+                <span>Shoptet priorita: <code>${(idx + 1) * 10}</code></span>
               </div>
               ${memoryBadge}
             </div>
@@ -735,7 +745,7 @@
             ${
               isInStock
                 ? `<button class="btn btn--sm btn--critical" onclick="simulateStock(${idx}, 0)">Vyprodat (0 ks)</button>`
-                : `<button class="btn btn--sm btn--success" onclick="simulateStock(${idx}, 25)">Naskladnit (+25 ks)</button>`
+                : `<button class="btn btn--sm btn--success" onclick="simulateStock(${idx}, 25)">+ Naskladnit (25)</button>`
             }
           </div>
         `;
@@ -979,3 +989,4 @@
   </script>
 </body>
 </html>
+
