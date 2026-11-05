@@ -186,6 +186,12 @@
       color: #fff;
     }
 
+    .btn--success:hover:not(:disabled) {
+      background: #0d6e38;
+      border-color: #0d6e38;
+      color: #fff;
+    }
+
     .btn--critical {
       background: #fff;
       border-color: #f3b7b2;
@@ -194,12 +200,20 @@
 
     .btn--critical:hover:not(:disabled) {
       background: #fff4f4;
+      border-color: var(--s-critical);
+      color: var(--s-critical);
     }
 
     .btn--pinned-active {
       background: #ebe4ff;
       border-color: #b79eff;
       color: #5233b5;
+    }
+
+    .btn--pinned-active:hover:not(:disabled) {
+      background: #ded2ff;
+      border-color: #9d7df8;
+      color: #4224a1;
     }
 
     .btn--sm {
