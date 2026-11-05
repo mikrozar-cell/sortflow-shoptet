@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SortFlow Pro pro Shoptet — Vizuální řazení produktů v kategoriích & Paměť naskladnění</title>
+  <style>
+    :root {
+      --s-bg: #f3f5f8;
+      --s-surface: #ffffff;
+      --s-border: #dce1e7;
+      --s-text: #1e242b;
+      --s-text-subdued: #5c6672;
+      --s-primary: #0097e6;
+      --s-primary-hover: #007bb8;
+      --s-success: #108043;
+      --s-success-bg: #e3f1df;
+      --s-critical: #d82c0d;
+      --s-critical-bg: #fff4f4;
+      --s-pinned-bg: #f5f2ff;
+      --s-pinned-border: #7c5dfa;
+      --s-radius: 10px;
+      --s-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background: var(--s-bg);
+      color: var(--s-text);
+      padding-bottom: 60px;
+    }
+
+    .topbar {
+      background: #141c24;
+      color: #fff;
+      padding: 13px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 3px solid var(--s-primary);
+    }
+
+    .topbar__brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 15.5px;
+    }
+
+    .topbar__logo {
+      background: var(--s-primary);
+      color: #fff;
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .topbar__badges {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge--dark {
+      background: #2b3642;
+      color: #e1e6eb;
+    }
+
+    .badge--success {
+      background: var(--s-success-bg);
+      color: var(--s-success);
+    }
+
+    .badge--warning {
+      background: #fff4ce;
+      color: #795600;
+    }
+
+    .badge--critical {
+      background: #ffe5e3;
+      color: #9c1f0b;
+    }
+
+    .badge--pinned {
+      background: #ebe4ff;
+      color: #5b3cc4;
+    }
+
+    .container {
+      max-width: 1240px;
+      margin: 24px auto;
+      padding: 0 20px;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .page-header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .page-header p {
+      color: var(--s-text-subdued);
+      font-size: 13.5px;
+    }
+
+    .page-header__actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 15px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid var(--s-border);
+      background: #fff;
+      color: var(--s-text);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn:hover:not(:disabled) {
+      background: #f6f8fa;
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn--primary {
+      background: var(--s-primary);
+      border-color: var(--s-primary);
+      color: #fff;
+    }
+
+    .btn--primary:hover:not(:disabled) {
+      background: var(--s-primary-hover);
+    }
+
+    .btn--success {
+      background: var(--s-success);
+      border-color: var(--s-success);
+      color: #fff;
+    }
+
+    .btn--critical {
+      background: #fff;
+      border-color: #f3b7b2;
+      color: var(--s-critical);
+    }
+
+    .btn--critical:hover:not(:disabled) {
+      background: #fff4f4;
+    }
+
+    .btn--pinned-active {
+      background: #ebe4ff;
+      border-color: #b79eff;
+      color: #5233b5;
+    }
+
+    .btn--sm {
+      padding: 5px 10px;
+      font-size: 12px;
+      border-radius: 6px;
+    }
+
+    .banner {
+      padding: 12px 16px;
+      border-radius: var(--s-radius);
+      margin-bottom: 16px;
+      font-size: 13.5px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .banner--info {
+      display: flex;
+      background: #e8f5fe;
+      border: 1px solid #9bd1f9;
+      color: #0b4f79;
+    }
+
+    .banner--success {
+      background: #e6f6ec;
+      border: 1px solid #9cd6b0;
+      color: #0f5228;
+    }
+
+    .controls-panel {
+      background: var(--s-surface);
+      border: 1px solid var(--s-border);
+      border-radius: var(--s-radius);
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--s-shadow);
+      display: grid;
+      grid-template-columns: 1.2fr 1.1fr 1.1fr 1.2fr;
+      gap: 14px;
+    }
+
+    @media (max-width: 960px) {
+      .controls-panel {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .control-box {
+      border: 1px solid #eaedf1;
+      border-radius: 8px;
+      padding: 11px 13px;
+      background: #fafbfc;
+    }
+
+    .control-box label {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .control-box p {
+      font-size: 11.5px;
+      color: var(--s-text-subdued);
+      margin-top: 4px;
+      line-height: 1.35;
+    }
+
+    .select-input {
+      width: 100%;
+      margin-top: 6px;
+      padding: 8px 10px;
+      border-radius: 7px;
+      border: 1px solid var(--s-border);
+      font-size: 13px;
+      background: #fff;
+    }
+
+    .toolbar {
+      background: var(--s-surface);
+      border: 1px solid var(--s-border);
+      border-radius: var(--s-radius);
+      padding: 11px 16px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      box-shadow: var(--s-shadow);
+    }
+
+    .toolbar__left, .toolbar__right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      position: relative;
+    }
+
+    @media (max-width: 1060px) {
+      .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .product-card {
+      background: var(--s-surface);
+      border: 1.5px solid var(--s-border);
+      border-radius: var(--s-radius);
+      padding: 14px;
+      box-shadow: var(--s-shadow);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      cursor: grab;
+      position: relative;
+      transition: transform 0.14s ease, box-shadow 0.14s ease;
+      user-select: none;
+    }
+
+    .product-card:hover {
+      box-shadow: 0 5px 14px rgba(0, 0, 0, 0.09);
+    }
+
+    .product-card.is-pinned {
+      background: var(--s-pinned-bg);
+      border-color: var(--s-pinned-border);
+    }
+
+    .product-card.is-oos {
+      background: var(--s-critical-bg);
+      border-color: #f3b7b2;
+    }
+
+    .product-card.is-dragging {
+      opacity: 0.35;
+      border-style: dashed;
+    }
+
+    .product-card.drop-before::before,
+    .product-card.drop-after::after {
+      content: "";
+      position: absolute;
+      top: -6px;
+      bottom: -6px;
+      width: 4px;
+      background: var(--s-primary);
+      border-radius: 4px;
+      z-index: 20;
+    }
+
+    .product-card.drop-before::before {
+      left: -11px;
+    }
+
+    .product-card.drop-after::after {
+      right: -11px;
+    }
+
+    .drop-pill-indicator {
+      display: none;
+      position: absolute;
+      top: -16px;
+      background: var(--s-primary);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      z-index: 30;
+      white-space: nowrap;
+    }
+
+    .product-card.drop-before .drop-pill-indicator {
+      display: inline-block;
+      left: -14px;
+    }
+
+    .product-card.drop-after .drop-pill-indicator {
+      display: inline-block;
+      right: -14px;
+    }
+
+    .product-card__top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .product-card__rank-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .rank-pill {
+      background: #1e242b;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .rank-jump-input {
+      width: 46px;
+      padding: 3px 6px;
+      font-size: 12px;
+      border: 1px solid var(--s-border);
+      border-radius: 5px;
+      text-align: center;
+    }
+
+    .product-card__body {
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+    }
+
+    .product-thumb {
+      width: 44px;
+      height: 44px;
+      border-radius: 9px;
+      color: #fff;
+      font-weight: 800;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .product-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      line-height: 1.32;
+      margin-bottom: 4px;
+    }
+
+    .product-meta {
+      font-size: 12px;
+      color: var(--s-text-subdued);
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .memory-callout {
+      margin-top: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #8e1f0b;
+      background: #ffe5e3;
+      border: 1px solid #f5b9b5;
+      padding: 2px 7px;
+      border-radius: 6px;
+    }
+
+    .product-card__footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 10px;
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+      gap: 6px;
+    }
+
+    .api-footer {
+      margin-top: 28px;
+      background: #fff;
+      border: 1px solid var(--s-border);
+      border-radius: var(--s-radius);
+      padding: 16px 20px;
+      font-size: 12.5px;
+      color: var(--s-text-subdued);
+      line-height: 1.5;
+    }
+
+    .api-footer code {
+      background: #f0f4f8;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #0b4f79;
+      font-family: monospace;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #141c24;
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+      display: none;
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar__brand">
+      <span class="topbar__logo">SF</span>
+      <span>SortFlow Pro pro Shoptet — Vizuální řazení kategorií & Paměť naskladnění</span>
+    </div>
+    <div class="topbar__badges">
+      <span class="badge badge--dark">Testovací e-shop: ukazkovy-eshop.myshoptet.com</span>
+      <span id="sortModeBadge" class="badge badge--warning">Řazení kategorie: Nejprodávanější</span>
+      <span class="badge badge--success">Shoptet API v1.0 Ready</span>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-header">
+      <div>
+        <h1>Vizuální správa priorit produktů v kategorii & Automatické odsunutí vyprodaných</h1>
+        <p>Přetahujte produkty myší (Drag & Drop), připínejte klíčové položky na začátek, automaticky odsouvejte vyprodané produkty na konec a při naskladnění je vraťte na původní pozici.</p>
+      </div>
+      <div class="page-header__actions">
+        <button id="undoBtn" class="btn btn--critical" onclick="restoreSnapshot()" disabled>
+          ↺ 1-Click Undo (Obnovit uložené pořadí)
+        </button>
+        <button class="btn btn--primary" onclick="saveCategoryOrder()">
+          ✓ Uložit a synchronizovat do Shoptetu
+        </button>
+      </div>
+    </div>
+
+    <div id="statusBanner" class="banner banner--info" style="display:flex;">
+      <span id="statusBannerText">
+        ℹ️ Interaktivní ukázka doplňku pro Shoptet: Vyzkoušejte přetažení karet, tlačítko <strong>Připnout</strong>, simulaci vyprodání (<strong>Vyprodat 0 ks</strong>) a následné <strong>Naskladnit (+25 ks)</strong>.
+      </span>
+    </div>
+
+    <section class="controls-panel">
+      <div class="control-box">
+        <label for="categorySelect">Vyberte kategorii Shoptetu</label>
+        <select id="categorySelect" class="select-input" onchange="onCategoryChange()">
+          <option value="cat_letni_kolekce">Letní kolekce 2026 (8 produktů)</option>
+          <option value="cat_obuv">Sportovní a outdoor obuv (6 produktů)</option>
+        </select>
+      </div>
+
+      <div class="control-box">
+        <label>
+          <input type="checkbox" id="autoDemoteToggle" checked onchange="onRuleToggle()" />
+          <span>Automaticky odsunout vyprodané</span>
+        </label>
+        <p>Produkty se stavem skladu 0 ks automaticky přesune na konec kategorie (webhook <code>stock:movement</code>).</p>
+      </div>
+
+      <div class="control-box">
+        <label>
+          <input type="checkbox" id="restockMemoryToggle" checked onchange="onRuleToggle()" />
+          <span>Paměť naskladnění (Restock Memory™)</span>
+        </label>
+        <p>Při opětovném naskladnění vrátí produkt přesně na jeho původní pozici před vyprodáním.</p>
+      </div>
+
+      <div class="control-box">
+        <label for="newProductsPos">Zařazení novinek (<code>product:create</code>)</label>
+        <select id="newProductsPos" class="select-input">
+          <option value="after_pinned">Hned za připnuté produkty (Doporučeno)</option>
+          <option value="top">Na 1. pozici v kategorii</option>
+          <option value="bottom">Před vyprodané produkty</option>
+        </select>
+      </div>
+    </section>
+
+    <div class="toolbar">
+      <div class="toolbar__left">
+        <button class="btn btn--sm" onclick="selectAll()">Vybrat vše</button>
+        <button class="btn btn--sm" onclick="clearSelection()">Zrušit výběr</button>
+        <button class="btn btn--sm" onclick="moveSelected('top')">↑ Přesunout vybrané nahoru</button>
+        <button class="btn btn--sm" onclick="moveSelected('bottom')">↓ Přesunout vybrané dolů</button>
+      </div>
+      <div class="toolbar__right">
+        <span style="font-size:12px;color:var(--s-text-subdued);font-weight:600;">Simulace Shoptet Webhooku:</span>
+        <button class="btn btn--sm" onclick="simulateNewProduct()">+ Simulovat nový produkt (product:create)</button>
+      </div>
+    </div>
+
+    <div id="productGrid" class="product-grid"></div>
+
+    <div class="api-footer">
+      <strong>Technická integrace se Shoptet API (<code>api.myshoptet.com</code>):</strong><br />
+      • Načtení priorit kategorie: <code>GET /api/categories/{categoryGuid}/productsPriority</code> &nbsp;|&nbsp;
+      • Zápis priorit (batch až 300 položek, <code>priority: 0..65535</code>): <code>PATCH /api/categories/{categoryGuid}/productsPriority</code> &nbsp;|&nbsp;
+      • Kontrola řazení kategorie (<code>catalogueSorting: "category-priority"</code>): <code>PATCH /api/categories/{categoryGuid}</code> &nbsp;|&nbsp;
+      • Skladové události v reálném čase: <code>POST /api/webhooks</code> (<code>stock:movement</code>, <code>product:create</code>).
+    </div>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const INITIAL_DATA = {
+      cat_letni_kolekce: [
+        { guid: "shp-101", title: "Lněná košile AeroWeave — Písková", code: "AW-LIN-01", price: "2 190 Kč", stock: 42, color: "#008060", is_pinned: false, saved_rank: 1 },
+        { guid: "shp-102", title: "Polarizační brýle Solstice — Tortoise", code: "SL-SUN-02", price: "2 990 Kč", stock: 25, color: "#c0392b", is_pinned: false, saved_rank: 2 },
+        { guid: "shp-103", title: "Bio bavlněné tričko Coastline — Navy", code: "CL-TEE-03", price: "890 Kč", stock: 0, color: "#2980b9", is_pinned: false, saved_rank: 3 },
+        { guid: "shp-104", title: "Chino kraťasy Riviera — Olivová", code: "RV-SHT-04", price: "1 590 Kč", stock: 19, color: "#2c3e50", is_pinned: false, saved_rank: 4 },
+        { guid: "shp-105", title: "Cestovní taška Mariner Canvas", code: "MR-BAG-05", price: "3 890 Kč", stock: 0, color: "#8e44ad", is_pinned: false, saved_rank: 5 },
+        { guid: "shp-106", title: "Ultralehká kšiltovka Breeze — Stone", code: "BZ-CAP-06", price: "790 Kč", stock: 75, color: "#16a085", is_pinned: false, saved_rank: 6 },
+        { guid: "shp-107", title: "Semišové espadrilky Mediterranean", code: "MD-ESP-07", price: "2 390 Kč", stock: 14, color: "#d35400", is_pinned: false, saved_rank: 7 },
+        { guid: "shp-108", title: "Termolahev na pláž 750 ml", code: "TH-BTL-08", price: "690 Kč", stock: 54, color: "#0097e6", is_pinned: false, saved_rank: 8 }
+      ],
+      cat_obuv: [
+        { guid: "shp-201", title: "Běžecké boty CloudStride Carbon", code: "CS-RUN-01", price: "4 290 Kč", stock: 31, color: "#2980b9", is_pinned: false, saved_rank: 1 },
+        { guid: "shp-202", title: "Trailové boty TerraGrip GTX", code: "TG-TRL-02", price: "3 990 Kč", stock: 0, color: "#c0392b", is_pinned: false, saved_rank: 2 },
+        { guid: "shp-203", title: "Tenisky MetroKnit Everyday", code: "MK-SNK-03", price: "2 790 Kč", stock: 48, color: "#16a085", is_pinned: false, saved_rank: 3 },
+        { guid: "shp-204", title: "Regenerační pantofle OrthoFoam", code: "OF-SLD-04", price: "1 290 Kč", stock: 60, color: "#8e44ad", is_pinned: false, saved_rank: 4 },
+        { guid: "shp-205", title: "Kotníkové boty Alpine Pro Trek", code: "AP-TRK-05", price: "5 490 Kč", stock: 12, color: "#2c3e50", is_pinned: false, saved_rank: 5 },
+        { guid: "shp-206", title: "Ultralehké maratonské tretry SprintX", code: "SX-MAR-06", price: "4 890 Kč", stock: 22, color: "#d35400", is_pinned: false, saved_rank: 6 }
+      ]
+    };
+
+    let currentCategory = "cat_letni_kolekce";
+    let categoryStates = JSON.parse(JSON.stringify(INITIAL_DATA));
+    let snapshots = {};
+    let selectedGuids = new Set();
+    let draggedIndex = null;
+    let currentDropSide = "before";
+
+    function getProducts() {
+      return categoryStates[currentCategory];
+    }
+
+    function applyRulesOrder(list) {
+      const autoDemote = document.getElementById("autoDemoteToggle").checked;
+      const pinned = [];
+      const regular = [];
+      const oos = [];
+
+      list.forEach((p) => {
+        if (autoDemote && p.stock <= 0) {
+          oos.push(p);
+        } else if (p.is_pinned) {
+          pinned.push(p);
+        } else {
+          regular.push(p);
+        }
+      });
+
+      return [...pinned, ...regular, ...oos];
+    }
+
+    function onCategoryChange() {
+      currentCategory = document.getElementById("categorySelect").value;
+      selectedGuids.clear();
+      document.getElementById("undoBtn").disabled = !snapshots[currentCategory];
+      renderGrid();
+    }
+
+    function onRuleToggle() {
+      categoryStates[currentCategory] = applyRulesOrder(getProducts());
+      renderGrid();
+    }
+
+    function renderGrid() {
+      const grid = document.getElementById("productGrid");
+      grid.innerHTML = "";
+      const products = getProducts();
+
+      products.forEach((prod, idx) => {
+        const isInStock = prod.stock > 0;
+        const isSelected = selectedGuids.has(prod.guid);
+        const card = document.createElement("div");
+        card.className = "product-card";
+        if (prod.is_pinned) card.classList.add("is-pinned");
+        if (!isInStock) card.classList.add("is-oos");
+        card.draggable = true;
+        card.dataset.index = idx;
+
+        const initials = prod.title.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase();
+
+        const stockBadge = isInStock
+          ? `<span class="badge badge--success">● Skladem (${prod.stock} ks)</span>`
+          : `<span class="badge badge--critical">● Vyprodáno · Odsunuto</span>`;
+
+        const pinBtn = prod.is_pinned
+          ? `<span class="badge badge--pinned">📌 Připnuto</span>
+             <button class="btn btn--sm btn--pinned-active" onclick="togglePin(${idx})">Odepnout</button>`
+          : `<button class="btn btn--sm" onclick="togglePin(${idx})">📌 Připnout</button>`;
+
+        const memoryBadge = (!isInStock && prod.saved_rank)
+          ? `<div class="memory-callout">🧠 Paměť naskladnění: Pozice #${prod.saved_rank}</div>`
+          : "";
+
+        card.innerHTML = `
+          <span class="drop-pill-indicator">Přesunout sem</span>
+          <div class="product-card__top">
+            <div class="product-card__rank-wrap">
+              <input type="checkbox" ${isSelected ? "checked" : ""} onchange="toggleSelect('${prod.guid}', this.checked)" />
+              <span class="rank-pill">#${idx + 1}</span>
+              <input type="number" min="1" max="${products.length}" value="${idx + 1}" class="rank-jump-input" onchange="jumpToRank(${idx}, this.value)" />
+            </div>
+            <div style="display:flex;gap:5px;align-items:center;">${pinBtn}</div>
+          </div>
+
+          <div class="product-card__body">
+            <div class="product-thumb" style="background:${prod.color}">${initials}</div>
+            <div>
+              <div class="product-title">${prod.title}</div>
+              <div class="product-meta">
+                <span>Kód: <strong>${prod.code}</strong></span>
+                <span><strong>${prod.price}</strong></span>
+                <span>Priorita: <code>${(idx + 1) * 10}</code></span>
+              </div>
+              ${memoryBadge}
+            </div>
+          </div>
+
+          <div class="product-card__footer">
+            ${stockBadge}
+            ${
+              isInStock
+                ? `<button class="btn btn--sm btn--critical" onclick="simulateStock(${idx}, 0)">Vyprodat (0 ks)</button>`
+                : `<button class="btn btn--sm btn--success" onclick="simulateStock(${idx}, 25)">Naskladnit (+25 ks)</button>`
+            }
+          </div>
+        `;
+
+        card.addEventListener("dragstart", (e) => {
+          draggedIndex = idx;
+          card.classList.add("is-dragging");
+          e.dataTransfer.effectAllowed = "move";
+        });
+
+        card.addEventListener("dragend", () => {
+          card.classList.remove("is-dragging");
+          clearDropIndicators();
+          draggedIndex = null;
+        });
+
+        grid.appendChild(card);
+      });
+    }
+
+    function clearDropIndicators() {
+      document.querySelectorAll(".product-card").forEach((c) => {
+        c.classList.remove("drop-before", "drop-after");
+      });
+    }
+
+    function setupGridDrag() {
+      const grid = document.getElementById("productGrid");
+      grid.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        if (draggedIndex === null) return;
+        const cards = Array.from(grid.querySelectorAll(".product-card:not(.is-dragging)"));
+        if (!cards.length) return;
+
+        let closest = null;
+        let minDist = Infinity;
+        cards.forEach((c) => {
+          const r = c.getBoundingClientRect();
+          const d = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2));
+          if (d < minDist) {
+            minDist = d;
+            closest = c;
+          }
+        });
+        if (!closest) return;
+
+        const idx = parseInt(closest.dataset.index, 10);
+        const r = closest.getBoundingClientRect();
+        const side = e.clientX < (r.left + r.width / 2) ? "before" : "after";
+        const products = getProducts();
+
+        let targetIndex;
+        if (draggedIndex < idx) targetIndex = side === "after" ? idx : idx - 1;
+        else if (draggedIndex > idx) targetIndex = side === "after" ? idx + 1 : idx;
+        else targetIndex = idx;
+        targetIndex = Math.max(0, Math.min(products.length - 1, targetIndex));
+
+        if (targetIndex === draggedIndex) {
+          clearDropIndicators();
+          return;
+        }
+
+        currentDropSide = side;
+        clearDropIndicators();
+        closest.classList.add(side === "before" ? "drop-before" : "drop-after");
+        const pill = closest.querySelector(".drop-pill-indicator");
+        if (pill) pill.textContent = `Přesunout na #${targetIndex + 1}`;
+      });
+
+      grid.addEventListener("drop", (e) => {
+        e.preventDefault();
+        const targetCard = document.querySelector(".product-card.drop-before, .product-card.drop-after");
+        clearDropIndicators();
+        if (draggedIndex === null || !targetCard) return;
+
+        const idx = parseInt(targetCard.dataset.index, 10);
+        const products = getProducts();
+        const [moved] = products.splice(draggedIndex, 1);
+        let insertAt = idx;
+        if (draggedIndex < idx) insertAt = currentDropSide === "after" ? idx : idx - 1;
+        else insertAt = currentDropSide === "after" ? idx + 1 : idx;
+        insertAt = Math.max(0, Math.min(products.length, insertAt));
+        products.splice(insertAt, 0, moved);
+        draggedIndex = null;
+        renderGrid();
+      });
+    }
+
+    function togglePin(idx) {
+      const products = getProducts();
+      const item = products[idx];
+      item.is_pinned = !item.is_pinned;
+      if (item.is_pinned) {
+        products.splice(idx, 1);
+        let lastPinned = -1;
+        for (let i = 0; i < products.length; i++) {
+          if (products[i].is_pinned) lastPinned = i;
+        }
+        products.splice(lastPinned + 1, 0, item);
+        showToast(`📌 Produkt připnut na pozici #${lastPinned + 2}`);
+      } else {
+        showToast("Produkt odepnut");
+      }
+      renderGrid();
+    }
+
+    function jumpToRank(idx, val) {
+      const products = getProducts();
+      let target = Math.max(1, Math.min(products.length, parseInt(val, 10) || 1)) - 1;
+      const [moved] = products.splice(idx, 1);
+      products.splice(target, 0, moved);
+      renderGrid();
+    }
+
+    function simulateStock(idx, newStock) {
+      const products = getProducts();
+      const item = products[idx];
+      if (newStock === 0) {
+        item.saved_rank = idx + 1;
+        item.stock = 0;
+        categoryStates[currentCategory] = applyRulesOrder(products);
+        setBanner(`📉 Simulace webhooku 'stock:movement' (0 ks): Produkt "${item.title}" byl automaticky odsunut na konec kategorie. Původní pozice #${item.saved_rank} uložena v Paměti naskladnění.`);
+      } else {
+        item.stock = newStock;
+        const targetIdx = Math.max(0, Math.min(products.length - 1, (item.saved_rank || 1) - 1));
+        products.splice(idx, 1);
+        products.splice(targetIdx, 0, item);
+        setBanner(`📈 Simulace webhooku 'stock:movement' (+${newStock} ks): Paměť naskladnění automaticky vrátila produkt "${item.title}" zpět na původní pozici #${targetIdx + 1}!`);
+      }
+      renderGrid();
+    }
+
+    function simulateNewProduct() {
+      const products = getProducts();
+      const num = Math.floor(100 + Math.random() * 899);
+      const rule = document.getElementById("newProductsPos").value;
+      const newProd = {
+        guid: "shp-new-" + num,
+        title: `Limitovaný letní blejzr #${num}`,
+        code: `LB-NEW-${num}`,
+        price: "3 490 Kč",
+        stock: 30,
+        color: "#0097e6",
+        is_pinned: false,
+        saved_rank: 1
+      };
+
+      if (rule === "top") {
+        products.unshift(newProd);
+      } else if (rule === "after_pinned") {
+        let insertIdx = 0;
+        products.forEach((p, i) => { if (p.is_pinned) insertIdx = i + 1; });
+        products.splice(insertIdx, 0, newProd);
+      } else {
+        let firstOos = products.findIndex(p => p.stock <= 0);
+        if (firstOos === -1) products.push(newProd);
+        else products.splice(firstOos, 0, newProd);
+      }
+
+      const selOpt = document.querySelector(`#categorySelect option[value="${currentCategory}"]`);
+      if (selOpt) {
+        selOpt.textContent = selOpt.textContent.replace(/\(\d+\s*produktů\)/, `(${products.length} produktů)`);
+      }
+
+      setBanner(`✨ Simulace webhooku 'product:create': Novinka "${newProd.title}" automaticky zařazena dle pravidla (nikdy nezapadne pod vyprodané položky).`);
+      renderGrid();
+    }
+
+    function saveCategoryOrder() {
+      snapshots[currentCategory] = {
+        items: JSON.parse(JSON.stringify(getProducts())),
+        autoDemote: document.getElementById("autoDemoteToggle").checked,
+        restockMem: document.getElementById("restockMemoryToggle").checked,
+        newPos: document.getElementById("newProductsPos").value
+      };
+      categoryStates[currentCategory] = applyRulesOrder(getProducts());
+      document.getElementById("undoBtn").disabled = false;
+
+      const badge = document.getElementById("sortModeBadge");
+      badge.textContent = "Řazení kategorie: Priorita (category-priority)";
+      badge.className = "badge badge--success";
+
+      setBanner("✓ Uloženo! Priority produktů (0..65535) byly odeslány přes PATCH /api/categories/{guid}/productsPriority a řazení kategorie přepnuto na 'category-priority'.");
+      showToast("Uloženo a synchronizováno se Shoptetem!");
+      renderGrid();
+    }
+
+    function restoreSnapshot() {
+      const snap = snapshots[currentCategory];
+      if (!snap) return;
+      categoryStates[currentCategory] = JSON.parse(JSON.stringify(snap.items));
+      document.getElementById("autoDemoteToggle").checked = snap.autoDemote;
+      document.getElementById("restockMemoryToggle").checked = snap.restockMem;
+      document.getElementById("newProductsPos").value = snap.newPos;
+      setBanner("↺ 1-Click Undo: Obnoveno poslední uložené pořadí produktů i nastavení pravidel kategorie.");
+      showToast("Původní pořadí obnoveno!");
+      renderGrid();
+    }
+
+    function toggleSelect(guid, checked) {
+      if (checked) selectedGuids.add(guid);
+      else selectedGuids.delete(guid);
+    }
+
+    function selectAll() {
+      getProducts().forEach(p => selectedGuids.add(p.guid));
+      renderGrid();
+    }
+
+    function clearSelection() {
+      selectedGuids.clear();
+      renderGrid();
+    }
+
+    function moveSelected(dir) {
+      if (!selectedGuids.size) return;
+      const products = getProducts();
+      const picked = products.filter(p => selectedGuids.has(p.guid));
+      const rest = products.filter(p => !selectedGuids.has(p.guid));
+      categoryStates[currentCategory] = dir === "top" ? [...picked, ...rest] : [...rest, ...picked];
+      renderGrid();
+    }
+
+    function setBanner(msg) {
+      const b = document.getElementById("statusBanner");
+      b.className = "banner banner--success";
+      b.style.display = "flex";
+      document.getElementById("statusBannerText").innerHTML = msg;
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.style.display = "block";
+      setTimeout(() => { t.style.display = "none"; }, 2600);
+    }
+
+    categoryStates[currentCategory] = applyRulesOrder(getProducts());
+    setupGridDrag();
+    renderGrid();
+  </script>
+</body>
+</html>
